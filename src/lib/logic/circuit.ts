@@ -53,6 +53,8 @@ export interface Wire {
   readonly id: string;
   /** Node whose value this wire carries (a rail, constant or gate id). */
   readonly from: string;
+  /** Gate this wire feeds, or undefined for the final output wire. */
+  readonly to?: string;
   readonly points: readonly Point[];
   /** Where it leaves a rail; drawn as a junction dot. */
   readonly tap?: Point;
@@ -231,6 +233,7 @@ export function buildCircuit(expr: Expr): Circuit {
       wires.push({
         id: `w-${id}-${pin}`,
         from: child.id,
+        to: id,
         points,
         tap: child.leaf?.kind === "var" ? from : undefined,
       });
