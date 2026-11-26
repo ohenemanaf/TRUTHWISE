@@ -40,6 +40,37 @@
   --ease-snap: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
+/* Dark mode follows the system setting. Same meanings, re-tuned for contrast on a dark sheet. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --color-paper: #0f1420;
+    --color-sheet: #161c2b;
+    --color-ink: #e6e9f0;
+    --color-graphite: #a7b0c2;
+    --color-faint: #7a849a;
+    --color-rule: #262e40;
+    --color-rule-strong: #3a4560;
+    --color-wash: #1d2436;
+
+    --color-binary: #45c495;
+    --color-binary-tint: #133829;
+    --color-tf: #9796f5;
+    --color-tf-tint: #26265a;
+    --color-gate: #4cbad8;
+    --color-gate-tint: #10384a;
+    --color-code: #e57bb4;
+    --color-code-tint: #421c31;
+    --color-word: #dfae4f;
+    --color-word-tint: #3d2e10;
+
+    --color-good: #45c495;
+    --color-good-tint: #133829;
+    --color-bad: #f2806f;
+    --color-bad-tint: #43201b;
+  }
+}
+
 :root {
   /* Overridden per notation by [data-notation] so children can use one name. */
   --accent: var(--color-tf);

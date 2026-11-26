@@ -6,6 +6,7 @@ import { explainRow } from "@/lib/explain";
 import { useProgress } from "@/lib/progress";
 import { NotationToggle } from "./notation-toggle";
 import { RollingText } from "./rolling-text";
+import { RowOrderToggle } from "./row-order-toggle";
 import { TableGrid, type GridColumn } from "./table-grid";
 
 const PLAY_MS = 1100;
@@ -18,7 +19,8 @@ const PLAY_MS = 1100;
 export function TableBuilder({ expr, caption }: { expr: Expr; caption?: string }) {
   const notation = useProgress((s) => s.notation);
   const setNotation = useProgress((s) => s.setNotation);
-  const table = useMemo(() => truthTable(expr), [expr]);
+  const order = useProgress((s) => s.rowOrder);
+  const table = useMemo(() => truthTable(expr, { order }), [expr, order]);
   const total = table.rows.length;
   /** Rows filled so far (0 = only the inputs are written). */
   const [filled, setFilled] = useState(0);
@@ -47,13 +49,16 @@ export function TableBuilder({ expr, caption }: { expr: Expr; caption?: string }
   const n = table.variables.length;
   const narration =
     current === null
-      ? `Start with every combination of inputs: ${n} variable${n === 1 ? "" : "s"} gives 2${superscript(n)} = ${total} rows, counted in binary. Then work out the columns one row at a time.`
+      ? `Start with every combination of inputs: ${n} variable${n === 1 ? "" : "s"} gives 2${superscript(n)} = ${total} rows, listed in a fixed counting order so none are missed. Then work out the columns one row at a time.`
       : `Row ${current + 1}: ${explainRow(expr, table.rows[current].assignment, notation)}`;
 
   return (
     <div className="space-y-3" data-notation={notation}>
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <NotationToggle value={notation} onChange={setNotation} showCourse={false} />
+        <div className="flex flex-wrap items-center gap-2">
+          <NotationToggle value={notation} onChange={setNotation} showCourse={false} />
+          <RowOrderToggle notation={notation} />
+        </div>
         <span className="text-[12px] text-faint">
           {filled} of {total} rows filled
         </span>
@@ -61,6 +66,7 @@ export function TableBuilder({ expr, caption }: { expr: Expr; caption?: string }
       <TableGrid
         variables={table.variables}
         rows={table.rows.map((r) => r.inputs)}
+        rowKeys={table.rows.map((r) => r.index)}
         columns={columns}
         notation={notation}
         activeRow={current}
@@ -82,7 +88,7 @@ export function TableBuilder({ expr, caption }: { expr: Expr; caption?: string }
           type="button"
           onClick={() => step(1)}
           disabled={filled === total}
-          className="h-9 rounded-lg bg-ink px-3.5 text-[13px] font-medium text-white disabled:opacity-40"
+          className="h-9 rounded-lg bg-ink px-3.5 text-[13px] font-medium text-paper disabled:opacity-40"
         >
           {filled === 0 ? "Fill row 1" : "Next row"}
         </button>

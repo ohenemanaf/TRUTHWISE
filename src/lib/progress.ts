@@ -3,6 +3,7 @@
 import { useSyncExternalStore } from "react";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
+import type { RowOrder } from "./logic";
 import type { Notation } from "./notation";
 
 /**
@@ -17,11 +18,14 @@ interface ProgressState {
   viewedMistakes: string[];
   lastLesson: string | null;
   notation: Notation;
+  /** zeros-first (electronics counting) or trues-first (most logic textbooks). */
+  rowOrder: RowOrder;
   completeLesson: (id: string) => void;
   solveExercise: (id: string) => void;
   viewMistake: (id: string) => void;
   visitLesson: (id: string) => void;
   setNotation: (n: Notation) => void;
+  setRowOrder: (o: RowOrder) => void;
   reset: () => void;
 }
 
@@ -33,6 +37,7 @@ const initial = {
   viewedMistakes: [],
   lastLesson: null,
   notation: "tf" as Notation,
+  rowOrder: "zeros-first" as RowOrder,
 };
 
 export const useProgress = create<ProgressState>()(
@@ -44,6 +49,7 @@ export const useProgress = create<ProgressState>()(
       viewMistake: (id) => set((s) => ({ viewedMistakes: addUnique(s.viewedMistakes, id) })),
       visitLesson: (id) => set({ lastLesson: id }),
       setNotation: (notation) => set({ notation }),
+      setRowOrder: (rowOrder) => set({ rowOrder }),
       reset: () => set(initial),
     }),
     {

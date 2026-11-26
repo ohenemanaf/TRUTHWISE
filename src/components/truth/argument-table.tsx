@@ -5,6 +5,7 @@ import { checkArgument, format, parseArgument } from "@/lib/logic";
 import { NOTATION, valueLabel } from "@/lib/notation";
 import { useProgress } from "@/lib/progress";
 import { NotationToggle } from "./notation-toggle";
+import { RowOrderToggle } from "./row-order-toggle";
 import { TableGrid, type GridColumn } from "./table-grid";
 
 /**
@@ -24,11 +25,12 @@ export function ArgumentTable({
 }) {
   const notation = useProgress((s) => s.notation);
   const setNotation = useProgress((s) => s.setNotation);
+  const order = useProgress((s) => s.rowOrder);
   const report = useMemo(() => {
     const parsed = parseArgument(argument);
     if (!parsed.ok) throw new Error(`Bad argument in content: ${argument} (${parsed.error.message})`);
-    return checkArgument(parsed.argument);
-  }, [argument]);
+    return checkArgument(parsed.argument, order);
+  }, [argument, order]);
 
   const text = NOTATION[notation].text;
   const { premises, conclusion } = report.argument;
@@ -57,11 +59,17 @@ export function ArgumentTable({
           <span className="mx-2 text-faint">∴</span>
           {format(conclusion, text)}
         </p>
-        {showToggle && <NotationToggle value={notation} onChange={setNotation} showCourse={false} />}
+        {showToggle && (
+          <div className="flex flex-wrap gap-2">
+            <RowOrderToggle notation={notation} />
+            <NotationToggle value={notation} onChange={setNotation} showCourse={false} />
+          </div>
+        )}
       </div>
       <TableGrid
         variables={report.variables}
         rows={report.rows.map((r) => r.inputs)}
+        rowKeys={report.rows.map((r) => r.index)}
         columns={columns}
         notation={notation}
         rowTone={(i) => (report.rows[i].counterexample ? "counterexample" : report.rows[i].critical ? "critical" : undefined)}

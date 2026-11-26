@@ -120,6 +120,16 @@ describe("argument validity", () => {
     expect(report.rows.filter((r) => r.critical).map((r) => r.assignment)).toEqual([{ P: true, Q: true }]);
   });
 
+  it("row order changes the listing but never the verdict", () => {
+    const parsed = parseArgument("P → Q, Q ∴ P");
+    if (!parsed.ok) throw new Error("parse");
+    const up = checkArgument(parsed.argument, "zeros-first");
+    const down = checkArgument(parsed.argument, "trues-first");
+    expect(down.rows.map((r) => r.index)).toEqual([...up.rows.map((r) => r.index)].reverse());
+    expect(down.valid).toBe(up.valid);
+    expect(down.counterexamples.map((r) => r.assignment)).toEqual(up.counterexamples.map((r) => r.assignment));
+  });
+
   it("inconsistent premises make an argument vacuously valid, and we flag it", () => {
     const report = verdict("P, ¬P ∴ Q");
     expect(report.valid).toBe(true);

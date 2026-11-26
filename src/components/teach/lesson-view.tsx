@@ -69,14 +69,14 @@ export function LessonView({
           {next ? (
             <Link
               href={`/teach/${next.slug}`}
-              className="inline-flex h-9 items-center rounded-lg bg-ink px-3.5 text-[13px] font-medium text-white"
+              className="inline-flex h-9 items-center rounded-lg bg-ink px-3.5 text-[13px] font-medium text-paper"
             >
               Next: {next.title}
             </Link>
           ) : (
             <Link
               href="/experiment"
-              className="inline-flex h-9 items-center rounded-lg bg-ink px-3.5 text-[13px] font-medium text-white"
+              className="inline-flex h-9 items-center rounded-lg bg-ink px-3.5 text-[13px] font-medium text-paper"
             >
               All done. Open the sandbox
             </Link>

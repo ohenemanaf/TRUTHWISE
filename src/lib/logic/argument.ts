@@ -1,7 +1,7 @@
 import { variablesOf, type Expr } from "./ast";
 import { evaluate, type Assignment } from "./evaluate";
 import { parse, type ParseError } from "./parser";
-import { assignments } from "./truth-table";
+import { assignments, type RowOrder } from "./truth-table";
 
 /**
  * An argument is valid when its conclusion can never be false while all of its
@@ -39,9 +39,9 @@ export interface ValidityReport {
   readonly inconsistentPremises: boolean;
 }
 
-export function checkArgument(argument: Argument): ValidityReport {
+export function checkArgument(argument: Argument, order: RowOrder = "zeros-first"): ValidityReport {
   const variables = variablesOf(...argument.premises, argument.conclusion);
-  const rows: ArgumentRow[] = assignments(variables).map(({ index, assignment, inputs }) => {
+  const rows: ArgumentRow[] = assignments(variables, order).map(({ index, assignment, inputs }) => {
     const premises = argument.premises.map((p) => evaluate(p, assignment));
     const conclusion = evaluate(argument.conclusion, assignment);
     const critical = premises.every(Boolean);

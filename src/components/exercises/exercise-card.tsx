@@ -49,7 +49,7 @@ export function CheckButton({ onClick, disabled, children = "Check" }: { onClick
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="h-9 rounded-lg bg-ink px-3.5 text-[13px] font-medium text-white disabled:opacity-40"
+      className="h-9 rounded-lg bg-ink px-3.5 text-[13px] font-medium text-paper disabled:opacity-40"
     >
       {children}
     </button>

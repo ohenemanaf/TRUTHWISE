@@ -26,7 +26,9 @@ A **truth table** lists every possible combination of inputs and the output for 
         { type: "build", expr: "¬A", caption: "Truth table for NOT A" },
         {
           type: "callout",
-          text: `**Listing rows without missing any:** count in binary. With A and B, the rows are 00, 01, 10, 11. The first column changes slowest and the last column changes every row. Every table in Truthwise is laid out this way.`,
+          text: `**Listing rows without missing any:** count in binary. With A and B, the rows are 00, 01, 10, 11. The first column changes slowest and the last column changes every row.
+
+**Courses disagree on where to start.** Electronics counts up from 00, but most logic textbooks start from TT and count down. They're the same rows in reverse order. Use the row-order switch under any table to match your course, and watch the rows slide into place.`,
         },
       ],
       exercises: [

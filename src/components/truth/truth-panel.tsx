@@ -10,6 +10,7 @@ import { CodeView } from "./code-view";
 import { NotationToggle } from "./notation-toggle";
 import { RollingText } from "./rolling-text";
 import { RosettaList } from "./rosetta-list";
+import { RowOrderToggle } from "./row-order-toggle";
 import { TableGrid, type GridColumn } from "./table-grid";
 
 /**
@@ -36,13 +37,16 @@ export function TruthPanel({
 }) {
   const saved = useProgress((s) => s.notation);
   const setSaved = useProgress((s) => s.setNotation);
+  const order = useProgress((s) => s.rowOrder);
   const notation = controlled ?? saved;
   const setNotation = onNotationChange ?? setSaved;
 
-  const table = useMemo(() => truthTable(expr), [expr]);
-  const [selected, setSelected] = useState<number | null>(null);
-  // Default to the all-ones row: it lights the most wires.
-  const selectedRow = selected !== null && selected < table.rows.length ? selected : table.rows.length - 1;
+  const table = useMemo(() => truthTable(expr, { order }), [expr, order]);
+  // Remember the picked row by its identity (binary index), so it survives a row-order flip.
+  const [pickedIndex, setPickedIndex] = useState<number | null>(null);
+  const allOnes = 2 ** table.variables.length - 1; // default: lights the most wires
+  const position = table.rows.findIndex((r) => r.index === (pickedIndex ?? allOnes));
+  const selectedRow = position >= 0 ? position : table.rows.length - 1;
   const assignment = table.rows[selectedRow]?.assignment ?? null;
 
   const columns: GridColumn[] = (workingColumns ? table.columns : table.columns.slice(-1)).map((col, i, all) => ({
@@ -52,6 +56,7 @@ export function TruthPanel({
     emphasis: i === all.length - 1,
   }));
   const info = NOTATION[notation];
+  const rowPicking = notation === "gate" || notation === "code";
 
   return (
     <section data-notation={notation} aria-label={label ?? "Truth table"} className="space-y-3">
@@ -60,7 +65,7 @@ export function TruthPanel({
           <p className="text-[12px] text-graphite">
             <RollingText text={`As written in ${info.course}`} />
           </p>
-          <p className="expr text-[18px] font-semibold text-[var(--accent)] transition-colors duration-300 break-words">
+          <p className="expr text-[18px] font-semibold break-words text-[var(--accent)] transition-colors duration-300">
             <RollingText text={format(expr, info.text)} />
           </p>
         </div>
@@ -68,19 +73,23 @@ export function TruthPanel({
       </div>
 
       <div className="grid items-start gap-3 md:grid-cols-[minmax(0,auto)_minmax(0,1fr)]">
-        <TableGrid
-          variables={table.variables}
-          rows={table.rows.map((r) => r.inputs)}
-          columns={columns}
-          notation={notation}
-          selectedRow={notation === "gate" || notation === "code" ? selectedRow : null}
-          onSelectRow={setSelected}
-          caption={`Truth table for ${format(expr)}`}
-        />
+        <div className="min-w-0 space-y-2">
+          <TableGrid
+            variables={table.variables}
+            rows={table.rows.map((r) => r.inputs)}
+            rowKeys={table.rows.map((r) => r.index)}
+            columns={columns}
+            notation={notation}
+            selectedRow={rowPicking ? selectedRow : null}
+            onSelectRow={(pos) => setPickedIndex(table.rows[pos].index)}
+            caption={`Truth table for ${format(expr)}`}
+          />
+          {table.variables.length > 0 && <RowOrderToggle notation={notation} />}
+        </div>
 
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
-            key={notation === "binary" || notation === "tf" ? "rosetta" : notation}
+            key={rowPicking ? notation : "rosetta"}
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}

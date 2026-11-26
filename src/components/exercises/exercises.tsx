@@ -3,14 +3,16 @@
 import { useMemo, useState } from "react";
 import type { ChoiceOption, Exercise } from "@/content/types";
 import {
+  checkArgument,
   differingRows,
   equivalent,
   format,
   parse,
   parseArgument,
-  checkArgument,
   parseOrThrow,
   truthTable,
+  type Expr,
+  type TruthTable,
 } from "@/lib/logic";
 import { NOTATION, valueLabel, type Notation } from "@/lib/notation";
 import { useProgress } from "@/lib/progress";
@@ -18,6 +20,7 @@ import { ArgumentTable } from "@/components/truth/argument-table";
 import { CircuitDiagram } from "@/components/truth/circuit-diagram";
 import { ExpressionInput } from "@/components/truth/expression-input";
 import { NotationToggle } from "@/components/truth/notation-toggle";
+import { RowOrderToggle } from "@/components/truth/row-order-toggle";
 import { TableGrid } from "@/components/truth/table-grid";
 import { RichText } from "@/components/rich-text";
 import { CheckButton, ExerciseCard, type Feedback } from "./exercise-card";
@@ -45,25 +48,64 @@ function useNotation() {
   return [useProgress((s) => s.notation), useProgress((s) => s.setNotation)] as const;
 }
 
+/** The exercise's table in the learner's chosen row order. */
+function useOrderedTable(expr: Expr | null): TruthTable | null {
+  const order = useProgress((s) => s.rowOrder);
+  return useMemo(() => (expr ? truthTable(expr, { order }) : null), [expr, order]);
+}
+
+function Toggles({ notation, setNotation }: { notation: Notation; setNotation: (n: Notation) => void }) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      <RowOrderToggle notation={notation} />
+      <NotationToggle value={notation} onChange={setNotation} showCourse={false} />
+    </div>
+  );
+}
+
+/** A read-only output column to match against. */
+function TargetTable({ table, notation, label }: { table: TruthTable; notation: Notation; label: string }) {
+  return (
+    <TableGrid
+      variables={table.variables}
+      rows={table.rows.map((r) => r.inputs)}
+      rowKeys={table.rows.map((r) => r.index)}
+      columns={[{ key: "out", label, values: table.rows.map((r) => r.output), emphasis: true }]}
+      notation={notation}
+    />
+  );
+}
+
 // ---------------------------------------------------------------------------
 
 function FillTable({ exercise, index }: { exercise: Extract<Exercise, { kind: "fill" }>; index: number }) {
   const expr = useMemo(() => parseOrThrow(exercise.expr), [exercise.expr]);
-  const table = useMemo(() => truthTable(expr), [expr]);
+  const table = useOrderedTable(expr)!;
   const [notation, setNotation] = useNotation();
-  const [answers, setAnswers] = useState<(boolean | null)[]>(() => table.rows.map(() => null));
+  // Keyed by each row's binary index, so answers stay put when the row order flips.
+  const [answers, setAnswers] = useState<Record<number, boolean>>({});
   const [checked, setChecked] = useState(false);
   const [solved, markSolved] = useSolved(exercise.id);
   const [feedback, setFeedback] = useState<Feedback>(null);
 
-  const wrong = (r: number) => checked && answers[r] !== table.rows[r].output;
+  const answerAt = (pos: number): boolean | null => answers[table.rows[pos].index] ?? null;
+  const wrong = (pos: number) => checked && answerAt(pos) !== table.rows[pos].output;
+  const complete = table.rows.every((r) => answers[r.index] !== undefined);
 
   const check = () => {
     setChecked(true);
-    const mistakes = table.rows.filter((row, r) => answers[r] !== row.output).length;
+    const mistakes = table.rows.filter((row) => answers[row.index] !== row.output).length;
     if (mistakes === 0) {
       markSolved();
-      setFeedback({ tone: "right", message: <>Every row is right. That&apos;s the truth table for <span className="expr">{format(expr, NOTATION[notation].text)}</span>.</> });
+      setFeedback({
+        tone: "right",
+        message: (
+          <>
+            Every row is right. That&apos;s the truth table for{" "}
+            <span className="expr">{format(expr, NOTATION[notation].text)}</span>.
+          </>
+        ),
+      });
     } else {
       setFeedback({
         tone: "wrong",
@@ -76,30 +118,32 @@ function FillTable({ exercise, index }: { exercise: Extract<Exercise, { kind: "f
     <ExerciseCard prompt={exercise.prompt} solved={solved} feedback={feedback} index={index}>
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <p className="text-[12.5px] text-graphite">Click each output cell to set it.</p>
-        <NotationToggle value={notation} onChange={setNotation} showCourse={false} />
+        <Toggles notation={notation} setNotation={setNotation} />
       </div>
       <TableGrid
         variables={table.variables}
         rows={table.rows.map((r) => r.inputs)}
-        columns={[{ key: "out", label: expr, values: answers, emphasis: true }]}
+        rowKeys={table.rows.map((r) => r.index)}
+        columns={[{ key: "out", label: expr, values: table.rows.map((_, pos) => answerAt(pos)), emphasis: true }]}
         notation={notation}
-        rowTone={(r) => (wrong(r) ? "wrong" : checked && answers[r] !== null ? "right" : undefined)}
+        rowTone={(pos) => (wrong(pos) ? "wrong" : checked && answerAt(pos) !== null ? "right" : undefined)}
         editable={{
           column: "out",
-          onToggle: (r) => {
+          onToggle: (pos) => {
             setChecked(false);
             setFeedback(null);
+            const key = table.rows[pos].index;
             // Cycle blank → true → false → true …
-            setAnswers((a) => a.map((v, i) => (i === r ? (v === null ? true : !v) : v)));
+            setAnswers((a) => ({ ...a, [key]: a[key] === undefined ? true : !a[key] }));
           },
         }}
       />
       <div className="mt-3 flex gap-2">
-        <CheckButton onClick={check} disabled={answers.some((a) => a === null)} />
+        <CheckButton onClick={check} disabled={!complete} />
         <button
           type="button"
           onClick={() => {
-            setAnswers(table.rows.map(() => null));
+            setAnswers({});
             setChecked(false);
             setFeedback(null);
           }}
@@ -115,8 +159,12 @@ function FillTable({ exercise, index }: { exercise: Extract<Exercise, { kind: "f
 // ---------------------------------------------------------------------------
 
 function OptionBody({ option, notation }: { option: ChoiceOption; notation: Notation }) {
-  if (option.circuit) return <CircuitDiagram expr={parseOrThrow(option.circuit)} showGateNames={false} title="Circuit option" />;
-  if (option.expr) return <span className="expr text-[14px]">{format(parseOrThrow(option.expr), NOTATION[notation].text)}</span>;
+  if (option.circuit) {
+    return <CircuitDiagram expr={parseOrThrow(option.circuit)} showGateNames={false} title="Circuit option" />;
+  }
+  if (option.expr) {
+    return <span className="expr text-[14px]">{format(parseOrThrow(option.expr), NOTATION[notation].text)}</span>;
+  }
   return <span className="text-[13.5px]">{option.text}</span>;
 }
 
@@ -124,8 +172,8 @@ function Choose({ exercise, index }: { exercise: Extract<Exercise, { kind: "choo
   const [notation, setNotation] = useNotation();
   const [picked, setPicked] = useState<number | null>(null);
   const [solved, markSolved] = useSolved(exercise.id);
-  const target = useMemo(() => (exercise.table ? truthTable(parseOrThrow(exercise.table)) : null), [exercise.table]);
-  const hasCircuits = exercise.options.some((o) => o.circuit);
+  const targetExpr = useMemo(() => (exercise.table ? parseOrThrow(exercise.table) : null), [exercise.table]);
+  const target = useOrderedTable(targetExpr);
 
   const feedback: Feedback =
     picked === null
@@ -139,17 +187,12 @@ function Choose({ exercise, index }: { exercise: Extract<Exercise, { kind: "choo
       {target && (
         <div className="mb-3 space-y-2">
           <div className="flex justify-end">
-            <NotationToggle value={notation} onChange={setNotation} showCourse={false} />
+            <Toggles notation={notation} setNotation={setNotation} />
           </div>
-          <TableGrid
-            variables={target.variables}
-            rows={target.rows.map((r) => r.inputs)}
-            columns={[{ key: "out", label: "output", values: target.rows.map((r) => r.output), emphasis: true }]}
-            notation={notation}
-          />
+          <TargetTable table={target} notation={notation} label="output" />
         </div>
       )}
-      <div className={`grid gap-2 ${hasCircuits ? "sm:grid-cols-2" : "sm:grid-cols-2"}`} role="radiogroup" aria-label="Options">
+      <div className="grid gap-2 sm:grid-cols-2" role="radiogroup" aria-label="Options">
         {exercise.options.map((option, i) => {
           const state = picked === i ? (i === exercise.answer ? "right" : "wrong") : null;
           return (
@@ -188,14 +231,21 @@ function WriteExpression({ exercise, index }: { exercise: Extract<Exercise, { ki
   const [solved, markSolved] = useSolved(exercise.id);
   const [feedback, setFeedback] = useState<Feedback>(null);
   const target = useMemo(() => parseOrThrow(exercise.target), [exercise.target]);
-  const table = useMemo(() => truthTable(target), [target]);
+  const table = useOrderedTable(target)!;
   const parsed = text.trim() ? parse(text) : null;
 
   const check = () => {
     if (!parsed?.ok) return;
     const used = exercise.forbid?.find((f) => text.toLowerCase().includes(f.toLowerCase()));
     if (used) {
-      setFeedback({ tone: "wrong", message: <>Equivalent or not, the point is to do it without <span className="expr">{used}</span>.</> });
+      setFeedback({
+        tone: "wrong",
+        message: (
+          <>
+            Equivalent or not, the point is to do it without <span className="expr">{used.trim()}</span>.
+          </>
+        ),
+      });
       return;
     }
     if (equivalent(parsed.expr, target)) {
@@ -207,21 +257,23 @@ function WriteExpression({ exercise, index }: { exercise: Extract<Exercise, { ki
     const where = Object.entries(diff)
       .map(([k, v]) => `${k} = ${valueLabel(v, notation)}`)
       .join(", ");
-    setFeedback({ tone: "wrong", message: <>Close, but it gives the wrong output when <span className="expr">{where}</span>.</> });
+    setFeedback({
+      tone: "wrong",
+      message: (
+        <>
+          Close, but it gives the wrong output when <span className="expr">{where}</span>.
+        </>
+      ),
+    });
   };
 
   return (
     <ExerciseCard prompt={exercise.prompt} solved={solved} feedback={feedback} index={index}>
       <div className="mb-3 space-y-2">
         <div className="flex justify-end">
-          <NotationToggle value={notation} onChange={setNotation} showCourse={false} />
+          <Toggles notation={notation} setNotation={setNotation} />
         </div>
-        <TableGrid
-          variables={table.variables}
-          rows={table.rows.map((r) => r.inputs)}
-          columns={[{ key: "out", label: "target", values: table.rows.map((r) => r.output), emphasis: true }]}
-          notation={notation}
-        />
+        <TargetTable table={table} notation={notation} label="target" />
       </div>
       <ExpressionInput
         value={text}
@@ -272,7 +324,7 @@ function Validity({ exercise, index }: { exercise: Extract<Exercise, { kind: "va
             }}
             aria-pressed={answer === choice}
             className={`h-9 rounded-lg border px-3.5 text-[13px] font-medium ${
-              answer === choice ? "border-ink bg-ink text-white" : "border-rule-strong bg-sheet"
+              answer === choice ? "border-ink bg-ink text-paper" : "border-rule-strong bg-sheet"
             }`}
           >
             {choice ? "Valid" : "Invalid"}

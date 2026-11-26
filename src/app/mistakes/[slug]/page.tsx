@@ -41,12 +41,12 @@ async function MistakeContent({ params }: { params: PageProps<"/mistakes/[slug]"
         {next ? (
           <Link
             href={`/mistakes/${next.slug}`}
-            className="inline-flex h-9 items-center rounded-lg bg-ink px-3.5 text-[13px] font-medium text-white"
+            className="inline-flex h-9 items-center rounded-lg bg-ink px-3.5 text-[13px] font-medium text-paper"
           >
             Next mistake: {next.title}
           </Link>
         ) : (
-          <Link href="/cheat-codes" className="inline-flex h-9 items-center rounded-lg bg-ink px-3.5 text-[13px] font-medium text-white">
+          <Link href="/cheat-codes" className="inline-flex h-9 items-center rounded-lg bg-ink px-3.5 text-[13px] font-medium text-paper">
             Open the cheat codes
           </Link>
         )}

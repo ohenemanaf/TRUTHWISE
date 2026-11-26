@@ -5,6 +5,7 @@ import { assignments, evaluate, format, parseOrThrow, variablesOf } from "@/lib/
 import { NOTATION } from "@/lib/notation";
 import { useProgress } from "@/lib/progress";
 import { NotationToggle } from "./notation-toggle";
+import { RowOrderToggle } from "./row-order-toggle";
 import { TableGrid } from "./table-grid";
 
 /**
@@ -14,25 +15,28 @@ import { TableGrid } from "./table-grid";
 export function CompareTable({ left, right }: { left: string; right: string }) {
   const notation = useProgress((s) => s.notation);
   const setNotation = useProgress((s) => s.setNotation);
+  const order = useProgress((s) => s.rowOrder);
   const data = useMemo(() => {
     const l = parseOrThrow(left);
     const r = parseOrThrow(right);
     const variables = variablesOf(l, r);
-    const rows = assignments(variables);
+    const rows = assignments(variables, order);
     const lv = rows.map((row) => evaluate(l, row.assignment));
     const rv = rows.map((row) => evaluate(r, row.assignment));
     return { l, r, variables, rows, lv, rv, same: lv.every((v, i) => v === rv[i]) };
-  }, [left, right]);
+  }, [left, right, order]);
   const text = NOTATION[notation].text;
 
   return (
     <div className="space-y-3" data-notation={notation}>
-      <div className="flex justify-end">
+      <div className="flex flex-wrap justify-end gap-2">
+        <RowOrderToggle notation={notation} />
         <NotationToggle value={notation} onChange={setNotation} showCourse={false} />
       </div>
       <TableGrid
         variables={data.variables}
         rows={data.rows.map((r) => r.inputs)}
+        rowKeys={data.rows.map((r) => r.index)}
         columns={[
           { key: "l", label: data.l, values: data.lv, emphasis: true },
           { key: "r", label: data.r, values: data.rv, emphasis: true },

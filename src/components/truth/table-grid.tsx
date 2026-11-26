@@ -1,5 +1,6 @@
 "use client";
 
+import { motion, useReducedMotion } from "motion/react";
 import { format, type Expr } from "@/lib/logic";
 import { NOTATION, valueLabel, type Notation } from "@/lib/notation";
 import { RollingText } from "./rolling-text";
@@ -32,6 +33,8 @@ export interface TableGridProps {
   /** Turns blank cells of a column into toggle buttons (for exercises). */
   readonly editable?: { column: string; onToggle: (row: number) => void };
   readonly caption?: string;
+  /** Stable identity per row (e.g. the row's binary index) so reordering animates. */
+  readonly rowKeys?: readonly number[];
 }
 
 const TONE_CLASS: Record<Exclude<RowTone, undefined>, string> = {
@@ -56,7 +59,9 @@ export function TableGrid({
   rowTone,
   editable,
   caption,
+  rowKeys,
 }: TableGridProps) {
+  const reduce = useReducedMotion();
   // Ripple: each column starts its roll a beat after the one to its left.
   const delayFor = (col: number, row: number) => col * 0.035 + row * 0.012;
   const hasCaptions = columns.some((c) => c.caption);
@@ -95,8 +100,11 @@ export function TableGrid({
             const selected = selectedRow === r;
             const interactive = Boolean(onSelectRow);
             return (
-              <tr
-                key={r}
+              <motion.tr
+                key={rowKeys?.[r] ?? r}
+                // Keyed by the row's identity, so flipping the row order slides rows to their new places.
+                layout={reduce ? false : "position"}
+                transition={{ duration: 0.45, ease: [0.32, 0.72, 0, 1] }}
                 onClick={interactive ? () => onSelectRow?.(r) : undefined}
                 onKeyDown={
                   interactive
@@ -163,7 +171,7 @@ export function TableGrid({
                     </td>
                   );
                 })}
-              </tr>
+              </motion.tr>
             );
           })}
         </tbody>

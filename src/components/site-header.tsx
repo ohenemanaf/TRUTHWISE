@@ -30,7 +30,7 @@ export function SiteHeader() {
                 href={m.href}
                 aria-current={active ? "page" : undefined}
                 className={`shrink-0 rounded-lg px-2.5 py-1.5 text-[13px] font-medium transition-colors sm:px-3 ${
-                  active ? "bg-ink text-white" : "text-graphite hover:bg-wash hover:text-ink"
+                  active ? "bg-ink text-paper" : "text-graphite hover:bg-wash hover:text-ink"
                 }`}
               >
                 {m.label}
