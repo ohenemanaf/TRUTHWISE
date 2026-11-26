@@ -81,6 +81,8 @@ export const GATE_HEIGHT = 34;
 export const PIN_OFFSET = 9;
 
 const RAIL_GAP = 22;
+/** Approximate advance width of one character of an 11px monospace rail label. */
+export const LABEL_CHAR_WIDTH = 6.8;
 const RAIL_LEFT = 14;
 const TOP = 30;
 const SLOT = 40;
@@ -174,8 +176,13 @@ export function buildCircuit(expr: Expr): Circuit {
   const tree = toTree(expr, notes);
   const variables = variablesOf(expr);
 
-  const railX = (name: string) => RAIL_LEFT + variables.indexOf(name) * RAIL_GAP;
-  const railsRight = variables.length > 0 ? railX(variables[variables.length - 1]) : RAIL_LEFT;
+  // Rail labels sit centred above each rail, so long names (isAdmin, hasToken)
+  // need wider spacing or neighbouring labels print on top of each other.
+  const labelWidth = Math.max(0, ...variables.map((n) => n.length)) * LABEL_CHAR_WIDTH;
+  const railGap = Math.max(RAIL_GAP, Math.ceil(labelWidth) + 8);
+  const railLeft = Math.max(RAIL_LEFT, Math.ceil(labelWidth / 2) + 2);
+  const railX = (name: string) => railLeft + variables.indexOf(name) * railGap;
+  const railsRight = variables.length > 0 ? railX(variables[variables.length - 1]) : railLeft;
   const firstColumnX = railsRight + 46;
   const columnX = (col: number) => firstColumnX + (col - 1) * COLUMN;
 

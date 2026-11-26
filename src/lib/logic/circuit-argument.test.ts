@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { checkArgument, parseArgument } from "./argument";
-import { buildCircuit, circuitValues, gateCount, singleGate } from "./circuit";
+import { LABEL_CHAR_WIDTH, buildCircuit, circuitValues, gateCount, singleGate } from "./circuit";
 import { evaluate } from "./evaluate";
 import { format } from "./format";
 import { minimalSumOfProducts } from "./minimize";
@@ -56,6 +56,18 @@ describe("circuit", () => {
     for (const { assignment } of assignments(["A", "B", "C"])) {
       const values = circuitValues(circuit, assignment);
       expect(values.get(circuit.output)).toBe(evaluate(expr, assignment));
+    }
+  });
+
+  it("rail labels never overlap, even with long variable names", () => {
+    for (const s of ["A ∧ B", "isAdmin || isOwner", "a && hasValidToken && isVerifiedUser"]) {
+      const circuit = buildCircuit(p(s));
+      const width = Math.max(...circuit.rails.map((r) => r.name.length)) * LABEL_CHAR_WIDTH;
+      for (let i = 1; i < circuit.rails.length; i++) {
+        expect(circuit.rails[i].x - circuit.rails[i - 1].x, s).toBeGreaterThanOrEqual(width);
+      }
+      // The first label must not spill off the left edge either.
+      expect(circuit.rails[0].x - width / 2, s).toBeGreaterThanOrEqual(0);
     }
   });
 
