@@ -11,6 +11,7 @@ const mono = JetBrains_Mono({ variable: "--font-jetbrains", subsets: ["latin", "
 const math = Noto_Sans_Math({ variable: "--font-noto-math", weight: "400" });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://truthwise.vercel.app"),
   title: { default: "Truthwise: one truth table, every course", template: "%s · Truthwise" },
   description:
     "Interactive truth tables that show the same logic in Digital Electronics (1/0, gates), Discrete Maths (T/F), Critical Thinking (arguments) and code (&&, ||, !).",

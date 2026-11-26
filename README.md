@@ -1,5 +1,7 @@
 # Truthwise
 
+**Live: [truthwise.vercel.app](https://truthwise.vercel.app)**
+
 **One truth table, four classes.** Truthwise is a free, interactive way to learn Boolean logic and truth tables. It shows that the logic taught in four different courses is the same thing written four different ways.
 
 | Course | Writes AND as | Values |
