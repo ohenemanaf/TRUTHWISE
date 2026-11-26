@@ -22,7 +22,7 @@ It's the second tool in a learning series. The first, **BranchWise**, teaches Gi
 - **Learn from mistakes:** seven common errors (De Morgan without the flip, affirming the consequent, XOR vs OR, precedence and more), each disproved by its own truth table.
 - **Cheat codes:** a searchable reference covering every gate, every law, valid and invalid argument forms, and a notation Rosetta Stone.
 
-Progress is saved in `localStorage`. Nothing is locked.
+Progress is saved in `localStorage`. Nothing is locked. Tables can list rows the electronics way (00 first) or the textbook way (TT first), and the rows slide into place when you switch. Dark mode follows the system setting.
 
 ## The logic engine (`src/lib/logic`)
 
@@ -46,10 +46,16 @@ Next.js 16 (App Router) · React 19 · TypeScript (strict) · Tailwind CSS 4 · 
 ```bash
 npm install
 npm run dev        # http://localhost:3000
-npm test           # engine + content tests
+npm test           # engine + content unit tests (Vitest)
+npm run test:e2e   # end-to-end tests (Playwright, desktop + phone sizes)
 npm run build      # production build
 ```
 
-## Deploy
+The end-to-end tests build the app, start it on port 3123, and drive it with the locally installed Microsoft Edge (`channel: "msedge"` in `playwright.config.ts`). On macOS or Linux, change the channel to `"chrome"` or run `npx playwright install chromium` and remove the channel lines.
 
-Import the repository into Vercel. No environment variables are needed.
+## Deploy to Vercel
+
+1. Sign in at [vercel.com](https://vercel.com) with GitHub.
+2. **Add New… → Project**, then import the `TRUTHWISE` repository.
+3. Leave every setting at its default. Vercel detects Next.js (build `next build`, output handled automatically). No environment variables are needed.
+4. Click **Deploy**. Every later push to `main` redeploys automatically.

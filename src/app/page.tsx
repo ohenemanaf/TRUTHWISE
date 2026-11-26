@@ -87,7 +87,7 @@ export default function Home() {
                     {c.course}
                   </td>
                   <td className="expr px-3.5 py-2" style={{ color: c.color }}>{c.writes}</td>
-                  <td className="expr px-3.5 py-2 text-graphite">{c.values}</td>
+                  <td className="expr px-3.5 py-2 whitespace-nowrap text-graphite">{c.values}</td>
                 </tr>
               ))}
             </tbody>
