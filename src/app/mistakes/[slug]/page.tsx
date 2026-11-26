@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import { MistakeView } from "@/components/mistakes/mistake-view";
 import { MISTAKES, findMistake } from "@/content/mistakes";
 
@@ -13,7 +14,7 @@ export async function generateMetadata({ params }: PageProps<"/mistakes/[slug]">
   return m ? { title: m.title, description: m.summary } : {};
 }
 
-export default async function MistakePage({ params }: PageProps<"/mistakes/[slug]">) {
+async function MistakeContent({ params }: { params: PageProps<"/mistakes/[slug]">["params"] }) {
   const mistake = findMistake((await params).slug);
   if (!mistake) notFound();
   const i = MISTAKES.indexOf(mistake);
@@ -51,5 +52,13 @@ export default async function MistakePage({ params }: PageProps<"/mistakes/[slug
         )}
       </div>
     </div>
+  );
+}
+
+export default function MistakePage(props: PageProps<"/mistakes/[slug]">) {
+  return (
+    <Suspense>
+      <MistakeContent params={props.params} />
+    </Suspense>
   );
 }

@@ -18,7 +18,8 @@ export function SiteHeader() {
       <div className="mx-auto flex h-14 max-w-[1120px] items-center gap-4 px-4">
         <Link href="/" className="flex shrink-0 items-center gap-2 font-semibold tracking-tight">
           <Logo />
-          <span className="text-[15px]">Truthwise</span>
+          <span className="hidden text-[15px] min-[440px]:inline">Truthwise</span>
+          <span className="sr-only min-[440px]:hidden">Truthwise home</span>
         </Link>
         <nav aria-label="Modes" className="-mr-2 ml-auto flex min-w-0 gap-0.5 overflow-x-auto">
           {MODES.map((m) => {

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import { LessonView } from "@/components/teach/lesson-view";
 import { LESSON_COUNT, allLessons, findLesson } from "@/content/modules";
 
@@ -13,7 +14,7 @@ export async function generateMetadata({ params }: PageProps<"/teach/[lesson]">)
   return ref ? { title: ref.lesson.title, description: ref.lesson.summary } : {};
 }
 
-export default async function LessonPage({ params }: PageProps<"/teach/[lesson]">) {
+async function LessonContent({ params }: { params: PageProps<"/teach/[lesson]">["params"] }) {
   const ref = findLesson((await params).lesson);
   if (!ref) notFound();
   const { lesson, module, prev, next, position } = ref;
@@ -42,5 +43,13 @@ export default async function LessonPage({ params }: PageProps<"/teach/[lesson]"
       </header>
       <LessonView lesson={lesson} module={module} prev={prev} next={next} />
     </div>
+  );
+}
+
+export default function LessonPage(props: PageProps<"/teach/[lesson]">) {
+  return (
+    <Suspense>
+      <LessonContent params={props.params} />
+    </Suspense>
   );
 }
