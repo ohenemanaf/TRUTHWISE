@@ -72,7 +72,7 @@ export function TruthPanel({
         {!hideToggle && <NotationToggle value={notation} onChange={setNotation} />}
       </div>
 
-      <div className="grid items-start gap-3 md:grid-cols-[minmax(0,auto)_minmax(0,1fr)]">
+      <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,auto)_minmax(280px,1fr)]">
         <div className="min-w-0 space-y-2">
           <TableGrid
             variables={table.variables}
