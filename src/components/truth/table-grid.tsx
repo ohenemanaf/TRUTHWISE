@@ -62,8 +62,8 @@ export function TableGrid({
   const hasCaptions = columns.some((c) => c.caption);
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-rule bg-sheet" data-notation={notation}>
-      <table className="expr w-full border-collapse text-[13.5px] tabular-nums">
+    <div className="w-fit max-w-full overflow-x-auto rounded-xl border border-rule bg-sheet" data-notation={notation}>
+      <table className="expr border-collapse text-[13.5px] tabular-nums">
         {caption && <caption className="sr-only">{caption}</caption>}
         <thead>
           <tr className="border-b border-rule bg-wash/60 text-left">

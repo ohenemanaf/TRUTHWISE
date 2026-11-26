@@ -67,26 +67,28 @@
   --accent-tint: var(--color-word-tint);
 }
 
-html {
-  -webkit-text-size-adjust: 100%;
-}
+/* In the base layer so Tailwind utilities (e.g. outline-none on inputs) can override them. */
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
 
-body {
-  background: var(--color-paper);
-  color: var(--color-ink);
-  font-family: var(--font-sans);
-  font-size: 14px;
-  line-height: 1.55;
-}
+  body {
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.55;
+  }
 
-::selection {
-  background: var(--accent-tint);
-}
+  ::selection {
+    background: var(--accent-tint);
+  }
 
-:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-  border-radius: 4px;
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
 }
 
 .expr {
