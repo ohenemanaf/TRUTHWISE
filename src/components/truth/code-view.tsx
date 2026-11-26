@@ -8,7 +8,7 @@ export function CodeView({ expr, assignment }: { expr: Expr; assignment?: Assign
 
   return (
     <div className="overflow-hidden rounded-xl border border-rule bg-[#1d2335] text-[12.5px] text-[#d9deea]" data-notation="code">
-      <pre className="expr overflow-x-auto p-3.5 leading-relaxed">
+      <pre className="expr whitespace-pre-wrap break-words p-3.5 leading-relaxed">
         {assignment && names.length > 0 && (
           <span className="block text-[#8d97ad]">
             {names.map((n, i) => (
@@ -23,7 +23,7 @@ export function CodeView({ expr, assignment }: { expr: Expr; assignment?: Assign
         )}
         <span className="text-[#c792ea]">if</span> ({condition}) {"{"}
         {"\n"}
-        <span className="text-[#8d97ad]">{"  // runs only when the condition is true"}</span>
+        <span className="text-[#8d97ad]">{"  // runs when condition is true"}</span>
         {"\n}"}
       </pre>
       {result !== null && (
