@@ -16,7 +16,7 @@ Discrete Maths, Critical Thinking and programming all teach the _same_ logic, wr
 ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6?style=flat-square&logo=typescript&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-0b6f8a?style=flat-square&logo=tailwindcss&logoColor=white)
 ![Unit tests](https://img.shields.io/badge/unit_tests-451_passing-0f7a57?style=flat-square&logo=vitest&logoColor=white)
-![E2E tests](https://img.shields.io/badge/e2e_checks-84_passing-0f7a57?style=flat-square&logo=playwright&logoColor=white)
+![E2E tests](https://img.shields.io/badge/e2e_checks-92_passing-0f7a57?style=flat-square&logo=playwright&logoColor=white)
 
 <img src="docs/screenshots/home.png" alt="Truthwise home page: the AND truth table with a notation toggle for 1/0, T/F, Gates and Code" width="100%" />
 
@@ -185,7 +185,7 @@ Correctness matters more here than anywhere else in the app, because it teaches 
 
 ```bash
 npm test           # 451 unit tests (Vitest)
-npm run test:e2e   # 84 end-to-end checks (Playwright, desktop + phone)
+npm run test:e2e   # 92 end-to-end checks (Playwright, desktop + phone)
 ```
 
 The unit tests go beyond spot checks:
@@ -196,7 +196,7 @@ The unit tests go beyond spot checks:
 - **Every notation round-trips:** printing and re-parsing gives an equivalent expression in all four notations.
 - **Lesson content is tested like code:** every expression parses, every answer key agrees with the engine, every argument labelled valid really is valid, and every "wrong" example in Mistakes really is wrong.
 
-The end-to-end tests load all 29 pages at desktop and phone sizes and fail on any console error or sideways scrolling. They also click through the real flows: the toggle (including by keyboard), the sandbox, exercises, progress surviving a reload, validity, search and dark mode.
+The end-to-end tests load all 29 pages at desktop and phone sizes and fail on any console error or sideways scrolling. They also click through the real flows: the toggle (including by keyboard), the sandbox, exercises, progress surviving a reload, validity, search and dark mode. A separate **text-overflow check** opens every page at 360, 768, 1024 and 1280px in both T/F and Code notation, expands every table, and fails if any text is clipped or spills out of its box.
 
 ## Getting started
 
