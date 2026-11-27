@@ -7,7 +7,7 @@ export function CodeView({ expr, assignment }: { expr: Expr; assignment?: Assign
   const names = Object.keys(assignment ?? {});
 
   return (
-    <div className="overflow-hidden rounded-xl border border-rule bg-[#1d2335] text-[12.5px] text-[#d9deea]" data-notation="code">
+    <div className="w-full min-w-0 overflow-hidden rounded-xl border border-rule bg-[#1d2335] text-[12.5px] text-[#d9deea]" data-notation="code">
       <pre className="expr whitespace-pre-wrap break-words p-3.5 leading-relaxed">
         {assignment && names.length > 0 && (
           <span className="block text-[#8d97ad]">

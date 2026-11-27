@@ -72,8 +72,10 @@ export function TruthPanel({
         {!hideToggle && <NotationToggle value={notation} onChange={setNotation} />}
       </div>
 
-      <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,auto)_minmax(280px,1fr)]">
-        <div className="min-w-0 space-y-2">
+      {/* Flex-wrap, not a fixed grid: when a wide table (long variable names) leaves too little
+          room, the side view drops below it instead of being squeezed until text spills. */}
+      <div className="flex flex-wrap items-start gap-4">
+        <div className="max-w-full min-w-0 space-y-2">
           <TableGrid
             variables={table.variables}
             rows={table.rows.map((r) => r.inputs)}
@@ -94,7 +96,7 @@ export function TruthPanel({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.22, ease: [0.32, 0.72, 0, 1] }}
-            className="min-w-0"
+            className="min-w-0 flex-1 basis-[340px]"
           >
             {notation === "gate" ? (
               <div className="rounded-xl border border-rule bg-sheet p-3">

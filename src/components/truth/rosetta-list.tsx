@@ -14,7 +14,7 @@ export function RosettaList({ expr, current }: { expr: Expr; current?: TextNotat
       {ROWS.map((row) => (
         <div
           key={row.notation}
-          className={`flex items-baseline justify-between gap-3 px-3.5 py-2.5 ${
+          className={`flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5 px-3.5 py-2.5 ${
             current === row.notation ? "bg-wash/70" : ""
           }`}
         >
@@ -22,7 +22,7 @@ export function RosettaList({ expr, current }: { expr: Expr; current?: TextNotat
             <span className="size-2 rounded-full" style={{ background: row.color }} aria-hidden="true" />
             {row.course}
           </dt>
-          <dd className="expr min-w-0 text-right text-[13px] break-words text-ink">{format(expr, row.notation)}</dd>
+          <dd className="expr ml-auto min-w-0 text-right text-[13px] break-words text-ink">{format(expr, row.notation)}</dd>
         </div>
       ))}
     </dl>
